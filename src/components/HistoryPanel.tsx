@@ -5,6 +5,7 @@ interface Props {
   items: HistorySummary[]
   onSelect: (id: number) => void
   onDelete: (id: number) => void
+  compact?: boolean
 }
 
 function getBusinessName(raw: string): string {
@@ -15,13 +16,17 @@ function getBusinessName(raw: string): string {
   }
 }
 
-export default function HistoryPanel({ items, onSelect, onDelete }: Props) {
+export default function HistoryPanel({ items, onSelect, onDelete, compact }: Props) {
+  const displayItems = compact ? items.slice(0, 3) : items
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 text-gray-400">
         <Clock className="w-4 h-4" />
         <span className="text-xs font-semibold uppercase tracking-widest text-gray-500">Past Posts</span>
         <span className="text-[11px] text-gray-600 bg-gray-900 px-2 py-0.5 rounded-full">{items.length}</span>
+        {compact && items.length > 3 && (
+          <span className="text-xs text-gray-500 ml-auto">Showing latest 3</span>
+        )}
       </div>
 
       {items.length === 0 ? (

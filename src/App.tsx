@@ -9,6 +9,7 @@ import HistoryPanel from './components/HistoryPanel'
 import NavBar from './components/NavBar'
 import HeroSection from './components/HeroSection'
 import FeaturesSection from './components/FeaturesSection'
+import SkeletonCard from './components/SkeletonCard'
 import HowItWorksSection from './components/HowItWorksSection'
 import PlatformShowcase from './components/PlatformShowcase'
 import Footer from './components/Footer'
@@ -171,13 +172,19 @@ export default function App() {
       <section id="try-it" className="py-24 px-6 bg-gray-900/20">
         <div className="max-w-6xl mx-auto space-y-10">
           {loading ? (
-            <div className="flex items-center justify-center py-16">
-              <div className="flex flex-col items-center gap-4">
-                <div className="relative">
-                  <div className="w-12 h-12 border-2 border-purple-500/30 border-t-transparent rounded-full animate-spin" />
-                  <div className="absolute inset-0 w-12 h-12 border-2 border-pink-500/30 border-b-transparent rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
-                </div>
-                <p className="text-sm text-gray-500 animate-pulse">Generating posts across 4 platforms...</p>
+            <div className="space-y-4 animate-in fade-in duration-500">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-6 bg-yellow-500 rounded-full animate-pulse" />
+                <h2 className="text-lg font-medium text-gray-200">Generating...</h2>
+                <span className="text-xs text-gray-500 bg-gray-900 px-2.5 py-0.5 rounded-full border border-gray-800 animate-pulse">
+                  4 platforms
+                </span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <SkeletonCard type="twitter" />
+                <SkeletonCard type="reddit" />
+                <SkeletonCard type="instagram" />
+                <SkeletonCard type="facebook" />
               </div>
             </div>
           ) : result ? (
@@ -188,6 +195,11 @@ export default function App() {
                 brandContext={lastBrandContext}
                 onReset={handleReset}
               />
+              {history.length > 0 && (
+                <div id="history" className="pt-6 border-t border-gray-800/50 scroll-mt-20">
+                  <HistoryPanel items={history} onSelect={handleHistorySelect} onDelete={handleHistoryDelete} />
+                </div>
+              )}
             </>
           ) : (
             <>
@@ -204,14 +216,14 @@ export default function App() {
               {error && <ErrorBanner message={error} raw={rawError} />}
 
               <InputForm onSubmit={handleGenerate} loading={loading} />
+
+              {history.length > 0 && (
+                <div id="history" className="pt-6 border-t border-gray-800/50 scroll-mt-20">
+                  <HistoryPanel items={history} onSelect={handleHistorySelect} onDelete={handleHistoryDelete} />
+                </div>
+              )}
             </>
           )}
-        </div>
-      </section>
-
-      <section id="history" className="py-24 px-6">
-        <div className="max-w-6xl mx-auto">
-          <HistoryPanel items={history} onSelect={handleHistorySelect} onDelete={handleHistoryDelete} />
         </div>
       </section>
 

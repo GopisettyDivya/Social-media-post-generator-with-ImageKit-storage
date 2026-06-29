@@ -10,7 +10,7 @@ export default function Footer() {
           </div>
           <span className="text-sm text-gray-500">Social Content Generator</span>
         </div>
-        <p className="text-xs text-gray-600">Powered by AI &middot; All rights reserved</p>
+        <p className="text-xs text-gray-600">&copy; {new Date().getFullYear()} Social Content Generator</p>
       </div>
     </footer>
   )

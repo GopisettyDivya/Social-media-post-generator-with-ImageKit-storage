@@ -29,6 +29,11 @@ export default function App() {
 
   useEffect(() => {
     refreshHistory()
+    fetch('/api/create_social_post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image_url: '', asset_type: 'post', brand_context: { business_name: '', summary: '' } }),
+    }).catch(() => {})
   }, [refreshHistory])
 
   useEffect(() => {
@@ -104,7 +109,7 @@ export default function App() {
         const body = JSON.parse(text)
         if (body.error === 'still_warming') {
           setError('AI model is warming up — auto-retrying...')
-          await new Promise(r => setTimeout(r, 3000))
+          await new Promise(r => setTimeout(r, 2000))
           return handleGenerate(data, true)
         }
       }
@@ -127,7 +132,7 @@ export default function App() {
       const msg = e.message || ''
       if (!isRetry && (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('504') || msg.includes('502'))) {
         setError('Connection timed out — retrying...')
-        await new Promise(r => setTimeout(r, 5000))
+        await new Promise(r => setTimeout(r, 2000))
         return handleGenerate(data, true)
       }
       setError(msg)

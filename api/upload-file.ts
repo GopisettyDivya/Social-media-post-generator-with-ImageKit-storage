@@ -19,7 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const uploadRes = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
       method: 'POST',
       headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ file, fileName, folder: '/', useUniqueFileName: true, tags: ['user-upload'] }),
+      body: JSON.stringify({ file, fileName, folder: '/', publicKey: process.env.IMAGEKIT_PUBLIC_KEY, useUniqueFileName: true, tags: ['user-upload'] }),
     })
     const data = await uploadRes.json()
     if (data.url) return res.json({ url: data.url })

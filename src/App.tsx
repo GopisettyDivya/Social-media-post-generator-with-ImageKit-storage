@@ -23,10 +23,8 @@ export default function App() {
   const [lastBrandContext, setLastBrandContext] = useState<BrandContext | undefined>()
   const [history, setHistory] = useState<HistorySummary[]>([])
 
-  const refreshHistory = useCallback(async () => {
-    try {
-      setHistory(await getHistory())
-    } catch { /* server might not be running */ }
+  const refreshHistory = useCallback(() => {
+    setHistory(getHistory())
   }, [])
 
   useEffect(() => {
@@ -115,8 +113,7 @@ export default function App() {
       setResult(json)
 
       savePost(data.imageUrl, JSON.stringify(data.brandContext), JSON.stringify(json))
-        .then(() => refreshHistory())
-        .catch(() => {})
+      refreshHistory()
     }
 
     try {
@@ -132,9 +129,9 @@ export default function App() {
     }
   }
 
-  async function handleHistorySelect(id: number) {
+  function handleHistorySelect(id: number) {
     try {
-      const post = await getPost(id)
+      const post = getPost(id)
       setResult(JSON.parse(post.result))
       setLastImageUrl(post.image_url)
       setLastBrandContext(JSON.parse(post.brand_context))
@@ -145,9 +142,9 @@ export default function App() {
     }
   }
 
-  async function handleHistoryDelete(id: number) {
+  function handleHistoryDelete(id: number) {
     try {
-      await removePost(id)
+      removePost(id)
       refreshHistory()
     } catch { /* ignore */ }
   }

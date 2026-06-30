@@ -30,16 +30,27 @@ export default function InputForm({ onSubmit, loading }: Props) {
     if (!file) return
     setUploading(true)
     try {
+      const authRes = await fetch('/api/imagekit-auth')
+      if (!authRes.ok) throw new Error('Auth failed')
+      const { token, expire, publicKey, signature } = await authRes.json()
       const formData = new FormData()
-      formData.append('image', file)
-      const res = await fetch('/api/upload', { method: 'POST', body: formData })
-      if (!res.ok) throw new Error('Upload failed')
-      const data = await res.json()
-      const url = window.location.origin + data.url
-      setImageUrl(url)
-      setPreview(url)
+      formData.append('file', file)
+      formData.append('publicKey', publicKey)
+      formData.append('token', token)
+      formData.append('expire', String(expire))
+      formData.append('signature', signature)
+      formData.append('useUniqueFileName', 'true')
+      formData.append('folder', '/')
+      const uploadRes = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await uploadRes.json()
+      if (!data.url) throw new Error(data.message || 'Upload failed')
+      setImageUrl(data.url)
+      setPreview(data.url)
     } catch {
-      alert('Failed to upload image. Make sure the backend is running.')
+      alert('Failed to upload image to ImageKit.')
     } finally {
       setUploading(false)
       if (fileRef.current) fileRef.current.value = ''

@@ -1,11 +1,6 @@
-export interface HistorySummary {
-  id: number
-  image_url: string
-  brand_context: string
-  created_at: string
-}
+const STORAGE_KEY = 'social-posts-history'
 
-export interface HistoryDetail {
+export interface HistorySummary {
   id: number
   image_url: string
   brand_context: string
@@ -13,29 +8,45 @@ export interface HistoryDetail {
   created_at: string
 }
 
-export async function getHistory(): Promise<HistorySummary[]> {
-  const res = await fetch('/api/history')
-  if (!res.ok) throw new Error('Failed to fetch history')
-  return res.json()
+function loadAll(): HistorySummary[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
 }
 
-export async function getPost(id: number): Promise<HistoryDetail> {
-  const res = await fetch(`/api/history/${id}`)
-  if (!res.ok) throw new Error('Post not found')
-  return res.json()
+function saveAll(items: HistorySummary[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
 }
 
-export async function savePost(image_url: string, brand_context: string, result: string) {
-  const res = await fetch('/api/history', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ image_url, brand_context, result }),
-  })
-  if (!res.ok) throw new Error('Failed to save post')
-  return res.json() as Promise<{ id: number; created_at: string }>
+export function getHistory(): HistorySummary[] {
+  return loadAll()
 }
 
-export async function removePost(id: number) {
-  const res = await fetch(`/api/history/${id}`, { method: 'DELETE' })
-  if (!res.ok) throw new Error('Failed to delete post')
+export function getPost(id: number): HistorySummary {
+  const item = loadAll().find(i => i.id === id)
+  if (!item) throw new Error('Not found')
+  return item
+}
+
+export function savePost(image_url: string, brand_context: string, result: string): { id: number; created_at: string } {
+  const items = loadAll()
+  const existing = items.find(i => i.image_url === image_url)
+  if (existing) return { id: existing.id, created_at: existing.created_at }
+  const entry: HistorySummary = {
+    id: Date.now(),
+    image_url,
+    brand_context,
+    result,
+    created_at: new Date().toISOString(),
+  }
+  items.unshift(entry)
+  saveAll(items)
+  return { id: entry.id, created_at: entry.created_at }
+}
+
+export function removePost(id: number): void {
+  saveAll(loadAll().filter(i => i.id !== id))
 }

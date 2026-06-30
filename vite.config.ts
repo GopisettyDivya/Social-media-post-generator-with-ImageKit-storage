@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5173,
       proxy: {
-        '/uploads': {
+        '/api/imagekit-auth': {
           target: 'http://localhost:3001',
           changeOrigin: true,
         },
@@ -17,20 +17,12 @@ export default defineConfig(({ mode }) => {
           target: 'http://localhost:3001',
           changeOrigin: true,
         },
-        '/api/upload': {
-          target: 'http://localhost:3001',
-          changeOrigin: true,
-        },
-        '/api/history': {
-          target: 'http://localhost:3001',
-          changeOrigin: true,
-        },
-        '/api': {
+        '/api/create_social_post': {
           target: env.VITE_IMAGE_AGENT_URL || 'https://image-agent-385902914959.us-central1.run.app',
           changeOrigin: true,
           timeout: 180000,
           proxyTimeout: 180000,
-          rewrite: (path) => path.replace(/^\/api/, ''),
+          rewrite: (path) => path.replace(/^\/api\/create_social_post/, '/create_social_post'),
           headers: {
             'X-API-Key': env.VITE_IMAGE_AGENT_API_KEY || '',
           },

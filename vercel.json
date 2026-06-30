@@ -1,5 +1,8 @@
 {
   "functions": {
+    "api/agent.ts": {
+      "maxDuration": 60
+    },
     "api/upload-file.ts": {
       "maxDuration": 30
     },
@@ -8,6 +11,7 @@
     }
   },
   "rewrites": [
+    { "source": "/api/create_social_post", "destination": "/api/agent" },
     { "source": "/(.*)", "destination": "/" }
   ]
 }

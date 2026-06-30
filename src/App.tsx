@@ -61,9 +61,6 @@ export default function App() {
     setLastBrandContext(data.brandContext)
 
     const attempt = async (): Promise<void> => {
-      const agentUrl = import.meta.env.VITE_IMAGE_AGENT_URL || 'https://image-agent-385902914959.us-central1.run.app'
-      const agentKey = import.meta.env.VITE_IMAGE_AGENT_API_KEY || ''
-
       let imageUrl = data.imageUrl
       try {
         const uploadRes = await fetch('/api/upload-url', {
@@ -75,12 +72,9 @@ export default function App() {
         if (uploadResult.success) imageUrl = uploadResult.imageKitUrl
       } catch { /* non-critical — use original URL */ }
 
-      const res = await fetch(`${agentUrl}/create_social_post`, {
+      const res = await fetch('/api/create_social_post', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': agentKey,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           image_url: imageUrl,
           asset_type: 'post',

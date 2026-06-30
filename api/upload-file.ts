@@ -16,10 +16,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const auth = Buffer.from(`${process.env.IMAGEKIT_PRIVATE_KEY}:`).toString('base64')
+    const form = new FormData()
+    form.append('file', file)
+    form.append('fileName', fileName)
+    form.append('publicKey', process.env.IMAGEKIT_PUBLIC_KEY || '')
     const uploadRes = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
       method: 'POST',
-      headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ file, fileName, folder: '/', publicKey: process.env.IMAGEKIT_PUBLIC_KEY, useUniqueFileName: true, tags: ['user-upload'] }),
+      headers: { 'Authorization': `Basic ${auth}` },
+      body: form,
     })
     const data = await uploadRes.json()
     if (data.url) return res.json({ url: data.url })

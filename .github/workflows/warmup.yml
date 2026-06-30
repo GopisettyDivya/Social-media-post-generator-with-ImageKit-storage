@@ -1,0 +1,16 @@
+name: Keep Image Agent warm
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  warmup:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "https://image-agent-385902914959.us-central1.run.app/create_social_post" \
+            -H "X-API-Key: ${{ secrets.IMAGE_AGENT_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"image_url":"https://ik.imagekit.io/mxszh5svb/upload_z0pp067fDi.jpg","asset_type":"post","brand_context":{"business_name":"Warmup","summary":"keep warm","tone":"neutral"}}'

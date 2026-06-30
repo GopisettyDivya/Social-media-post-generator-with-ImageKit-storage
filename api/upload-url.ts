@@ -11,7 +11,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!url) return res.status(400).json({ error: 'Missing url' })
 
   try {
-    const fileName = crypto.createHash('md5').update(url).digest('hex')
+    const ext = url.match(/\.(jpe?g|png|gif|webp|avif|bmp|svg)(\?|$)/i)?.[1] || 'jpg'
+    const fileName = `${crypto.createHash('md5').update(url).digest('hex')}.${ext}`
     const resp = await fetch(url, { signal: AbortSignal.timeout(15000) })
     if (!resp.ok) return res.status(400).json({ error: 'Failed to download image' })
     const imageBuf = await resp.arrayBuffer()
@@ -20,7 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const uploadRes = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
       method: 'POST',
       headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ file: base64, fileName, folder: folder || '/', useUniqueFileName: false, tags: ['social-post'] }),
+      body: JSON.stringify({ file: base64, fileName, folder: folder || '/', useUniqueFileName: true, tags: ['social-post'] }),
     })
     const data = await uploadRes.json()
     if (data.url) return res.json({ success: true, imageKitUrl: data.url, fileId: data.fileId })

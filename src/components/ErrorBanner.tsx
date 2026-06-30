@@ -6,7 +6,7 @@ interface Props {
 }
 
 export default function ErrorBanner({ message, raw }: Props) {
-  const isTimeout = message.includes('408') || message.toLowerCase().includes('timeout')
+  const isTimeout = message.includes('408') || message.toLowerCase().includes('timeout') || message.toLowerCase().includes('retry') || message.toLowerCase().includes('warming')
 
   return (
     <div className="bg-red-900/20 border border-red-800/40 rounded-2xl p-5 space-y-3">
@@ -21,11 +21,11 @@ export default function ErrorBanner({ message, raw }: Props) {
           )}
           {isTimeout ? (
             <p className="mt-2 text-xs text-red-400/60">
-              The API is taking longer than expected (cold start). Try again — up to 2-3 minutes.
+              The AI model is warming up (cold start, 30-60s). Auto-retrying every 5s until ready.
             </p>
           ) : (
             <p className="mt-2 text-xs text-red-400/60">
-              Make sure VITE_IMAGE_AGENT_API_KEY and VITE_IMAGE_AGENT_URL are set in the .env file.
+              Check your API key and URL are set correctly.
             </p>
           )}
         </div>

@@ -93,11 +93,20 @@ export default function App() {
 
       const text = await res.text()
 
-      if ((res.status === 500 || res.status === 504) && !isRetry) {
+      if (!isRetry && (res.status === 500 || res.status === 504)) {
         setRawError('')
         setError('Generation failed — retrying...')
         await new Promise(r => setTimeout(r, 3000))
         return handleGenerate(data, true)
+      }
+
+      if (res.status === 503) {
+        const body = JSON.parse(text)
+        if (body.error === 'still_warming') {
+          setError('AI model is warming up, retrying...')
+          await new Promise(r => setTimeout(r, 5000))
+          return handleGenerate(data, true)
+        }
       }
 
       if (!res.ok) {
@@ -115,7 +124,13 @@ export default function App() {
     try {
       await attempt()
     } catch (e: any) {
-      setError(e.message)
+      const msg = e.message || ''
+      if (!isRetry && (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('504') || msg.includes('502'))) {
+        setError('Connection timed out — retrying...')
+        await new Promise(r => setTimeout(r, 5000))
+        return handleGenerate(data, true)
+      }
+      setError(msg)
     } finally {
       setLoading(false)
     }

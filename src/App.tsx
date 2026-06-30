@@ -103,8 +103,8 @@ export default function App() {
       if (res.status === 503) {
         const body = JSON.parse(text)
         if (body.error === 'still_warming') {
-          setError('AI model is warming up, retrying...')
-          await new Promise(r => setTimeout(r, 5000))
+          setError('AI model is warming up — auto-retrying...')
+          await new Promise(r => setTimeout(r, 3000))
           return handleGenerate(data, true)
         }
       }

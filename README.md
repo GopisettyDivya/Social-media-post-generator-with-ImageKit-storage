@@ -11,7 +11,7 @@ Built because copying the same caption across platforms never works well.
 - SQLite database for keeping your post history around
 - ImageKit for storing uploaded images (so they don't disappear)
 
-## Running it
+## Running locally
 
 ```bash
 npm install
@@ -24,18 +24,23 @@ This starts both the backend (port 3001) and frontend (port 5173) at the same ti
 
 ## Environment Variables
 
-You'll need these in your `.env`:
-
 | Variable | What it is |
 |----------|------------|
 | `VITE_IMAGE_AGENT_API_KEY` | API key for the image agent service |
 | `VITE_IMAGE_AGENT_URL` | URL of the image agent endpoint |
 | `IMAGEKIT_PUBLIC_KEY` | Your ImageKit public key |
 | `IMAGEKIT_PRIVATE_KEY` | Your ImageKit private key |
-| `IMAGEKIT_URL_ENDPOINT` | Your ImageKit URL endpoint (looks like `https://ik.imagekit.io/your-id`) |
+| `IMAGEKIT_URL_ENDPOINT` | Your ImageKit URL endpoint |
 
-## What it does
+## Deploy on Render
 
-You paste an image URL (or upload a file), tell it about your brand, and it generates four posts. They get saved automatically so you don't lose them. If the API fails on the first try (cold starts), it retries once after a few seconds.
+1. Push your code to GitHub
+2. On Render, create a **New Web Service**
+3. Connect your repo
+4. Set:
+   - **Build Command:** `npm install && npm run build`
+   - **Start Command:** `tsx server/index.ts`
+5. Add all 5 env vars from `.env`
+6. Deploy
 
-Images get uploaded to ImageKit with dedup — same URL won't upload twice. You can also browse past posts from the history section and delete ones you don't need anymore.
+The backend serves the built frontend + handles all APIs in one process.

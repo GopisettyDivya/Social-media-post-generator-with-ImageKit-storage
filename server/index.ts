@@ -35,6 +35,27 @@ const upload = multer({
   },
 })
 
+const IMAGE_AGENT_URL = process.env.VITE_IMAGE_AGENT_URL || 'https://image-agent-385902914959.us-central1.run.app'
+const IMAGE_AGENT_KEY = process.env.VITE_IMAGE_AGENT_API_KEY || ''
+
+app.post('/api/create_social_post', async (req, res) => {
+  try {
+    const agentRes = await fetch(`${IMAGE_AGENT_URL}/create_social_post`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': IMAGE_AGENT_KEY,
+      },
+      body: JSON.stringify(req.body),
+      signal: AbortSignal.timeout(180000),
+    })
+    const text = await agentRes.text()
+    res.status(agentRes.status).send(text)
+  } catch (err: any) {
+    res.status(502).json({ error: `Image Agent request failed: ${err.message}` })
+  }
+})
+
 app.post('/api/upload', upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
   const buffer = fs.readFileSync(req.file.path)
@@ -75,8 +96,16 @@ app.delete('/api/history/:id', (req, res) => {
   res.json({ ok: true })
 })
 
+const distPath = path.join(__dirname, '..', 'dist')
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath))
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(distPath, 'index.html'))
+  })
+}
+
 initDb().then(() => {
   app.listen(PORT, () => {
-    console.log(`History server running on http://localhost:${PORT}`)
+    console.log(`Server running on http://localhost:${PORT}`)
   })
 })

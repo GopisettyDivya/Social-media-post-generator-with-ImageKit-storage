@@ -1,11 +1,13 @@
 {
   "functions": {
-    "api/agent.ts": {
-      "maxDuration": 180
+    "api/upload-file.ts": {
+      "maxDuration": 30
+    },
+    "api/upload-url.ts": {
+      "maxDuration": 30
     }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/agent" },
     { "source": "/(.*)", "destination": "/" }
   ]
 }

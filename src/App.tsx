@@ -61,24 +61,26 @@ export default function App() {
     setLastBrandContext(data.brandContext)
 
     const attempt = async (): Promise<void> => {
+      const agentUrl = import.meta.env.VITE_IMAGE_AGENT_URL || 'https://image-agent-385902914959.us-central1.run.app'
+      const agentKey = import.meta.env.VITE_IMAGE_AGENT_API_KEY || ''
+
       let imageUrl = data.imageUrl
       try {
-        const uploadRes = await fetch('/api/upload-to-imagekit', {
+        const uploadRes = await fetch('/api/upload-url', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url: data.imageUrl }),
         })
         const uploadResult = await uploadRes.json()
-        if (uploadResult.success) {
-          imageUrl = uploadResult.imageKitUrl
-        }
-      } catch {
-        /* non-critical — use original URL if upload fails */
-      }
+        if (uploadResult.success) imageUrl = uploadResult.imageKitUrl
+      } catch { /* non-critical — use original URL */ }
 
-      const res = await fetch('/api/create_social_post', {
+      const res = await fetch(`${agentUrl}/create_social_post`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': agentKey,
+        },
         body: JSON.stringify({
           image_url: imageUrl,
           asset_type: 'post',
@@ -97,7 +99,7 @@ export default function App() {
 
       const text = await res.text()
 
-      if (res.status === 500 && !isRetry) {
+      if ((res.status === 500 || res.status === 504) && !isRetry) {
         setRawError('')
         setError('Generation failed — retrying...')
         await new Promise(r => setTimeout(r, 3000))
@@ -119,11 +121,7 @@ export default function App() {
     try {
       await attempt()
     } catch (e: any) {
-      if (e.name === 'TypeError' && e.message === 'Failed to fetch') {
-        setError('Failed to reach the API. Check your internet and .env file.')
-      } else {
-        setError(e.message)
-      }
+      setError(e.message)
     } finally {
       setLoading(false)
     }

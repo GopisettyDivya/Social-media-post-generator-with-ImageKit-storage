@@ -30,27 +30,27 @@ export default function InputForm({ onSubmit, loading }: Props) {
     if (!file) return
     setUploading(true)
     try {
-      const authRes = await fetch('/api/imagekit-auth')
-      if (!authRes.ok) throw new Error('Auth failed')
-      const { token, expire, publicKey, signature } = await authRes.json()
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('publicKey', publicKey)
-      formData.append('token', token)
-      formData.append('expire', String(expire))
-      formData.append('signature', signature)
-      formData.append('useUniqueFileName', 'true')
-      formData.append('folder', '/')
-      const uploadRes = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
-        method: 'POST',
-        body: formData,
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const result = reader.result as string
+          resolve(result.split(',')[1])
+        }
+        reader.onerror = () => reject(new Error('Failed to read file'))
+        reader.readAsDataURL(file)
       })
-      const data = await uploadRes.json()
+      const res = await fetch('/api/upload-file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: base64, fileName: file.name }),
+      })
+      if (!res.ok) throw new Error('Upload failed')
+      const data = await res.json()
       if (!data.url) throw new Error(data.message || 'Upload failed')
       setImageUrl(data.url)
       setPreview(data.url)
     } catch {
-      alert('Failed to upload image to ImageKit.')
+      alert('Failed to upload image. Make sure the backend is running.')
     } finally {
       setUploading(false)
       if (fileRef.current) fileRef.current.value = ''

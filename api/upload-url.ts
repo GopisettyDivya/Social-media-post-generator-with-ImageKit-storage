@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -11,10 +12,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const auth = Buffer.from(`${process.env.IMAGEKIT_PRIVATE_KEY}:`).toString('base64')
+    const fileName = crypto.createHash('md5').update(url).digest('hex') + '.jpg'
     const form = new FormData()
     form.append('file', url)
-    form.append('fileName', 'upload.jpg')
+    form.append('fileName', fileName)
     form.append('publicKey', process.env.IMAGEKIT_PUBLIC_KEY || '')
+    form.append('useUniqueFileName', 'false')
+
     const uploadRes = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
       method: 'POST',
       headers: { 'Authorization': `Basic ${auth}` },

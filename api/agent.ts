@@ -20,7 +20,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-API-Key': agentKey },
         body: JSON.stringify(req.body),
-        signal: AbortSignal.timeout(9500),
+        signal: AbortSignal.timeout(50000),
       })
       const text = await agentRes.text()
       res.status(agentRes.status).send(text)

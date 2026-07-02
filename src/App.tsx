@@ -44,7 +44,7 @@ export default function App() {
     }
   }, [result])
 
-  async function handleGenerate(data: GenerateRequest, isRetry = false) {
+  async function handleGenerate(data: GenerateRequest, isRetry = false, uploadedImageUrl?: string) {
     const existing = history.find(h => h.image_url === data.imageUrl)
     if (existing) {
       try {
@@ -65,23 +65,27 @@ export default function App() {
     setLastImageUrl(data.imageUrl)
     setLastBrandContext(data.brandContext)
 
+    let currentImageUrl = uploadedImageUrl || data.imageUrl
+
     const attempt = async (): Promise<void> => {
-      let imageUrl = data.imageUrl
-      try {
-        const uploadRes = await fetch('/api/upload-url', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: data.imageUrl }),
-        })
-        const uploadResult = await uploadRes.json()
-        if (uploadResult.success) imageUrl = uploadResult.imageKitUrl
-      } catch { /* non-critical — use original URL */ }
+      const isAlreadyImageKit = currentImageUrl.includes('ik.imagekit.io')
+      if (!uploadedImageUrl && !isAlreadyImageKit) {
+        try {
+          const uploadRes = await fetch('/api/upload-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: data.imageUrl }),
+          })
+          const uploadResult = await uploadRes.json()
+          if (uploadResult.success) currentImageUrl = uploadResult.imageKitUrl
+        } catch { /* non-critical — use original URL */ }
+      }
 
       const res = await fetch('/api/create_social_post', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          image_url: imageUrl,
+          image_url: currentImageUrl,
           asset_type: 'post',
           brand_context: {
             business_name: data.brandContext.business_name,
@@ -102,7 +106,7 @@ export default function App() {
         setRawError('')
         setError('Generation failed — retrying...')
         await new Promise(r => setTimeout(r, 3000))
-        return handleGenerate(data, true)
+        return handleGenerate(data, true, currentImageUrl)
       }
 
       if (res.status === 503) {
@@ -110,7 +114,7 @@ export default function App() {
         if (body.error === 'still_warming') {
           setError('AI model is warming up — auto-retrying...')
           await new Promise(r => setTimeout(r, 2000))
-          return handleGenerate(data, true)
+          return handleGenerate(data, true, currentImageUrl)
         }
       }
 
@@ -133,7 +137,7 @@ export default function App() {
       if (!isRetry && (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('504') || msg.includes('502'))) {
         setError('Connection timed out — retrying...')
         await new Promise(r => setTimeout(r, 2000))
-        return handleGenerate(data, true)
+        return handleGenerate(data, true, currentImageUrl)
       }
       setError(msg)
     } finally {

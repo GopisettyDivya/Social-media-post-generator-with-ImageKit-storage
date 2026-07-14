@@ -1,14 +1,16 @@
 import { FacebookPost, BrandContext } from '../../types'
-import { ThumbsUp, MessageCircle, Share2, Globe, MoreHorizontal, Heart } from 'lucide-react'
+import { ThumbsUp, MessageCircle, Share2, Globe, MoreHorizontal, Heart, RefreshCw } from 'lucide-react'
 import { getInitials, getAvatarColor } from './utils'
 
 interface Props {
   post: FacebookPost
   imageUrl: string
   brand?: BrandContext
+  onRegenerate?: () => void
+  regenerating?: boolean
 }
 
-export default function FacebookCard({ post, imageUrl, brand }: Props) {
+export default function FacebookCard({ post, imageUrl, brand, onRegenerate, regenerating }: Props) {
   const name = brand?.business_name || 'Business'
   const initials = getInitials(name)
   const avatarColor = getAvatarColor(name)
@@ -39,7 +41,19 @@ export default function FacebookCard({ post, imageUrl, brand }: Props) {
             </div>
           </div>
         </div>
-        <MoreHorizontal className="w-5 h-5 text-gray-400" />
+        <div className="flex items-center gap-1">
+          {onRegenerate && (
+            <button
+              onClick={onRegenerate}
+              disabled={regenerating}
+              className="p-1 hover:bg-gray-700 rounded-lg transition-colors"
+              title="Regenerate this post"
+            >
+              <RefreshCw className={`w-4 h-4 ${regenerating ? 'animate-spin text-blue-400' : 'text-gray-400 hover:text-blue-400'}`} />
+            </button>
+          )}
+          <MoreHorizontal className="w-5 h-5 text-gray-400" />
+        </div>
       </div>
 
       {/* Caption */}

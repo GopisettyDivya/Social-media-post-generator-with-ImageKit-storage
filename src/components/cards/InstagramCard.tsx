@@ -1,14 +1,16 @@
 import { InstagramPost, BrandContext } from '../../types'
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from 'lucide-react'
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, RefreshCw } from 'lucide-react'
 import { getInitials, getAvatarColor } from './utils'
 
 interface Props {
   post: InstagramPost
   imageUrl: string
   brand?: BrandContext
+  onRegenerate?: () => void
+  regenerating?: boolean
 }
 
-export default function InstagramCard({ post, imageUrl, brand }: Props) {
+export default function InstagramCard({ post, imageUrl, brand, onRegenerate, regenerating }: Props) {
   const name = brand?.business_name || 'Business'
   const username = name.toLowerCase().replace(/[^a-z0-9]/g, '')
   const initials = getInitials(name)
@@ -28,7 +30,19 @@ export default function InstagramCard({ post, imageUrl, brand }: Props) {
           </div>
           <span className="text-sm font-semibold text-gray-100">{username}</span>
         </div>
-        <MoreHorizontal className="w-5 h-5 text-gray-100" />
+        <div className="flex items-center gap-1">
+          {onRegenerate && (
+            <button
+              onClick={onRegenerate}
+              disabled={regenerating}
+              className="p-1 hover:bg-gray-800 rounded-lg transition-colors"
+              title="Regenerate this post"
+            >
+              <RefreshCw className={`w-4 h-4 ${regenerating ? 'animate-spin text-pink-400' : 'text-gray-100 hover:text-pink-400'}`} />
+            </button>
+          )}
+          <MoreHorizontal className="w-5 h-5 text-gray-100" />
+        </div>
       </div>
 
       {/* Image */}

@@ -1,14 +1,16 @@
 import { RedditPost, BrandContext } from '../../types'
-import { ArrowUp, ArrowDown, MessageCircle, Award, Share2, Bookmark, MoreHorizontal } from 'lucide-react'
+import { ArrowUp, ArrowDown, MessageCircle, Award, Share2, Bookmark, MoreHorizontal, RefreshCw } from 'lucide-react'
 import { getInitials, getAvatarColor } from './utils'
 
 interface Props {
   post: RedditPost
   imageUrl: string
   brand?: BrandContext
+  onRegenerate?: () => void
+  regenerating?: boolean
 }
 
-export default function RedditCard({ post, imageUrl, brand }: Props) {
+export default function RedditCard({ post, imageUrl, brand, onRegenerate, regenerating }: Props) {
   const name = brand?.business_name || 'Business'
   const subreddit = 'r/' + (brand?.cuisine?.toLowerCase()?.replace(/[^a-z0-9]/g, '') || 'food')
   const username = 'u/' + name.replace(/[^a-zA-Z0-9]/g, '')
@@ -41,6 +43,16 @@ export default function RedditCard({ post, imageUrl, brand }: Props) {
             <span>Posted by {username}</span>
             <span>·</span>
             <span>2h</span>
+            {onRegenerate && (
+              <button
+                onClick={onRegenerate}
+                disabled={regenerating}
+                className="ml-auto p-1 hover:bg-gray-800 rounded-lg transition-colors"
+                title="Regenerate this post"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${regenerating ? 'animate-spin text-orange-400' : 'text-gray-500 hover:text-orange-400'}`} />
+              </button>
+            )}
           </div>
 
           {/* Title */}
